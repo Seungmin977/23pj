@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>숫자야구</title>
+  </head>
+
+  <body>
+    <form id="form">
+      <input type="text" id="input" required minlength="4" maxlength="4" />
+      <button>확인</button>
+    </form>
+    <div id="logs"></div>
+
+    <script>
+      const $input = document.querySelector("#input");
+      const $form = document.querySelector("#form");
+      const $logs = document.querySelector("#logs");
+
+      // console.log(Math.floor(Math.random() * 9 + 1)); // 1 ~ 9 까지 랜덤
+
+      //  0 <= Math.random * 9 + 1 < 10  - ( 1 ~ 10 까지 구한다는 수학적 식 )
+      // Math.floor(Math.random()) -- 소수점 아래로 없애기 반내림
+
+      const numbers = [];
+      for (let n = 0; n < 9; n++) {
+        numbers.push(n + 1);
+      }
+      const answer = [];
+      for (let n = 0; n < 4; n += 1) {
+        // 4 번 반복
+        const index = Math.floor(Math.random() * numbers.length); // 0~8 정수
+        answer.push(numbers[index]); // numbers에 값 answer에 집어넣기
+        numbers.splice(index, 1); // 기존 numbers에 있던 값 삭제
+      }
+
+      console.log(answer);
+
+      const tries = [];
+      function checkInput(input) {
+        //검사하는 코드
+        if (input.length !== 4) {
+          return alert("4자리 숫자를 입력해 주세요.");
+        }
+        if (new Set(input).size !== 4) {
+          //new Set(input) = 배열에 중복 값 없애고 배열 만듬?
+          return alert("중복되지 않게 입력해 주세요.");
+        }
+        if (tries.includes(input)) {
+          // 시도했던 tries 배열에 input 값이 있는지 검사
+          return alert("이미 시도한 값입니다.");
+        }
+
+        return true;
+      }
+
+      let out = 0;
+      $form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        const value = $input.value;
+        $input.value = "";
+        // 검사하는 코드
+        if (!checkInput(value)) {
+          return;
+        }
+        // 입력값 문제 없음
+
+        // 정답과 입력값 비교
+        if (answer.join("") === value) {
+          // join은 [3,1,4,6] -> 3146 그냥 숫자로 만들어줌
+          $logs.textContent = "홈런!";
+          return;
+        }
+        // 시도 횟수 체크
+        if (tries.length >= 9) {
+          const message = document.createTextNode(`패배! 정답은 ${answer.join("")}`);
+          $logs.appendChild(document.createElement("br"));
+          $logs.appendChild(message);
+          return;
+        }
+        //  몇 스트라이크 몇 볼인지 검사하기
+        let strike = 0;
+        let ball = 0;
+        for (let i = 0; i < answer.length; i++) {
+          const index = value.indexOf(answer[i]); //indexOf는 있다없다와 위치까지 알려줌
+          if (index > -1) {
+            // 일치하는 숫자 발견
+            if (index === i) {
+              //자릿수도 같음
+              strike += 1;
+            } else {
+              // 숫자만 같음
+              ball += 1;
+            }
+          }
+        }
+        if (strike === 0 && ball === 0) {
+          out++;
+          $logs.append(`${value}: ${out} 아웃`, document.createElement("br"));
+        } else {
+          // appendChild 는 create 등으로 만들고 추가하는데 append는 그냥 문자열 사용 가능
+          $logs.append(`${value}: ${strike} 스트라이크 ${ball} 볼`, document.createElement("br"));
+        }
+        if (out === 3) {
+          const message = document.createTextNode(`패배! 정답은 ${answer.join("")}`);
+          $logs.appendChild(message);
+          return;
+        }
+        tries.push(value);
+      });
+    </script>
+  </body>
+</html>
